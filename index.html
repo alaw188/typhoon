@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hong Kong Typhoon Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="title-block">
+      <h1>Hong Kong Typhoon Dashboard</h1>
+      <p class="subtitle">Aggregating official, model &amp; live perspectives for the South China Sea / W. Pacific</p>
+    </div>
+    <div class="controls">
+      <span id="updated" class="updated">—</span>
+      <button id="refresh" class="btn">Refresh</button>
+    </div>
+  </header>
+
+  <div class="legend">
+    <span><b>Perspectives:</b></span>
+    <span class="badge badge-official">Official</span>
+    <span class="badge badge-model">Model</span>
+    <span class="badge badge-nowcast">Nowcast</span>
+    <span class="badge badge-satellite">Satellite</span>
+    <span class="badge badge-impact">Impact</span>
+    <span class="legend-note">Inline panels are embedded; “Open ↗” panels are launched in a new tab (source blocks embedding).</span>
+  </div>
+
+  <!-- LIVE OFFICIAL PANEL (fetched from HKO Open Data API) -->
+  <section class="hko-panel" id="hko-panel">
+    <div class="panel-head">
+      <span class="badge badge-official">Official · Local</span>
+      <h2>HKO — Hong Kong Observatory (live)</h2>
+      <span class="perspective">The signal you must act on + currently active warnings (fetched live)</span>
+    </div>
+    <div id="hko-body" class="hko-body">
+      <p class="loading">Loading HKO data…</p>
+    </div>
+    <div class="open-row">
+      <a href="https://www.hko.gov.hk/en/informtc/tcMain.htm" target="_blank" rel="noopener">Open HKO Tropical Cyclone page ↗</a>
+    </div>
+  </section>
+
+  <!-- PERSPECTIVE GRID (built from app.js SOURCES config) -->
+  <main id="grid" class="grid"></main>
+
+  <footer class="footer">
+    <p>Built for personal typhoon monitoring in Hong Kong. Sources are external; data &amp; graphics belong to their
+       respective owners. If the HKO live panel fails to load, serve this page over http (e.g.
+       <code>python -m http.server</code>) so the browser permits the cross-origin request.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
