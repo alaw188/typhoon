@@ -50,9 +50,12 @@
       </summary>
       <div class="atis-body">
         <p class="atis-note">Automatic Terminal Information Service — current Hong Kong International Airport operational /
-          weather broadcast. Loads when you expand this section.</p>
-        <iframe class="atis-frame" data-src="https://atis.cad.gov.hk/ATIS/ATISweb/atis.php"
-                loading="lazy" referrerpolicy="no-referrer" title="HKIA ATIS"></iframe>
+          weather broadcast. Inline view requires the local proxy (run <code>python serve.py</code>); otherwise use the
+          link below.</p>
+        <iframe class="atis-frame" data-src="/atis/atis.php"
+                loading="lazy" referrerpolicy="no-referrer" title="HKIA ATIS"
+                onerror="this.style.display='none'"></iframe>
+        <p class="atis-fallback"><a href="https://atis.cad.gov.hk/ATIS/ATISweb/atis.php" target="_blank" rel="noopener">Open ATIS in new tab ↗</a></p>
       </div>
     </details>
   </section>
