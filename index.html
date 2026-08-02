@@ -41,6 +41,20 @@
     <div class="open-row">
       <a href="https://www.hko.gov.hk/en/informtc/tcMain.htm" target="_blank" rel="noopener">Open HKO Tropical Cyclone page ↗</a>
     </div>
+
+    <!-- Collapsible HKIA ATIS feed (lazy-loaded iframe on expand) -->
+    <details class="atis-collapse" id="atis">
+      <summary>
+        <span class="badge badge-impact">Impact</span>
+        HKIA — ATIS (live airport info) ▾
+      </summary>
+      <div class="atis-body">
+        <p class="atis-note">Automatic Terminal Information Service — current Hong Kong International Airport operational /
+          weather broadcast. Loads when you expand this section.</p>
+        <iframe class="atis-frame" data-src="https://atis.cad.gov.hk/ATIS/ATISweb/atis.php"
+                loading="lazy" referrerpolicy="no-referrer" title="HKIA ATIS"></iframe>
+      </div>
+    </details>
   </section>
 
   <!-- PERSPECTIVE GRID (built from app.js SOURCES config) -->

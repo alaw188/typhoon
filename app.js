@@ -9,9 +9,12 @@
 
 const HKO_WARN = "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=warningInfo&lang=en";
 const HKO_TC = "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=tropicalcyclone&lang=en";
+const RV_API = "https://api.rainviewer.com/public/weather-maps.json";
 
-// HK-centred coordinates for maps
+// Basin-wide centre for map embeds
 const LAT = 20.3, LON = 114.2, ZOOM = 5;
+// Specific point for the HK radar tile
+const HK_LAT = 22.3, HK_LON = 114.15;
 
 const SOURCES = [
   // ---------------- NOWCAST (first) ----------------
@@ -39,15 +42,12 @@ const SOURCES = [
     link: { label: "VentuSky", url: `https://www.ventusky.com/?lat=${LAT}&lon=${LON}&z=${ZOOM}&layers=wind` },
   },
   {
-    id: "nullschool",
-    name: "Earth Nullschool",
+    id: "rainviewer",
+    name: "RainViewer — HK Radar",
     type: "Nowcast",
-    perspective: "Global wind / atmosphere streams (WebGL). An elegant, different view of circulation around the basin.",
-    embed: `https://earth.nullschool.net/#current/wind/surface/overlay=rain/orthographic=${LON},${LAT},620`,
-    link: {
-      label: "Earth Nullschool",
-      url: `https://earth.nullschool.net/#current/wind/surface/overlay=rain/orthographic=${LON},${LAT},620`,
-    },
+    perspective: "Live weather-radar rainfall over Hong Kong (refreshes every 5 min). A different nowcast view — precipitation, not wind.",
+    rainviewer: true,
+    link: { label: "RainViewer", url: "https://www.rainviewer.com/" },
   },
 
   // ---------------- MODEL ----------------
@@ -249,6 +249,10 @@ function renderSources() {
       main = `<div class="frame-wrap"><iframe src="${esc(s.embed)}" loading="lazy" referrerpolicy="no-referrer"></iframe></div>`;
       const lk = s.link || (s.links && s.links[0]);
       if (lk) open = `<div class="open-row"><a href="${esc(lk.url)}" target="_blank" rel="noopener">Open ${esc(lk.label)} ↗</a></div>`;
+    } else if (s.rainviewer) {
+      main = `<div class="frame-wrap rv-wrap"><img class="rv-img" alt="Live Hong Kong rainfall radar" /></div>`;
+      const lk = s.link || (s.links && s.links[0]);
+      if (lk) open = `<div class="open-row"><a href="${esc(lk.url)}" target="_blank" rel="noopener">Open ${esc(lk.label)} ↗</a></div>`;
     } else {
       const links = (s.links || [s.link])
         .filter(Boolean)
@@ -271,6 +275,8 @@ function renderSources() {
       );
     }
 
+    if (s.rainviewer) setupRainViewer(card);
+
     grid.appendChild(card);
   });
 }
@@ -289,6 +295,49 @@ function esc(s) {
   return String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 }
 
+// ---------------------------------------------------------------------------
+//  RainViewer — live HK rainfall radar (real tiles, no framing restriction)
+// ---------------------------------------------------------------------------
+async function setupRainViewer(card) {
+  const img = card.querySelector(".rv-img");
+  async function update() {
+    try {
+      const j = await fetch(RV_API).then((r) => r.json());
+      const past = j.radar && j.radar.past;
+      if (!past || !past.length) throw new Error("no radar data");
+      const frame = past[past.length - 1]; // most recent frame: { time, path }
+      const z = 6;
+      const x = Math.floor(((HK_LON + 180) / 360) * Math.pow(2, z));
+      const latRad = (HK_LAT * Math.PI) / 180;
+      const y = Math.floor(
+        ((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2) * Math.pow(2, z)
+      );
+      img.src = `${j.host}${frame.path}/256/${z}/${x}/${y}/2/1/1.png`;
+      img.alt = "Live Hong Kong rainfall radar";
+    } catch (e) {
+      img.alt = "Radar temporarily unavailable — open RainViewer ↗";
+    }
+  }
+  update();
+  setInterval(update, 5 * 60 * 1000); // refresh every 5 min
+}
+
+// ---------------------------------------------------------------------------
+//  HKIA ATIS — lazy-loaded collapsible below the HKO panel
+// ---------------------------------------------------------------------------
+function setupATIS() {
+  const details = document.getElementById("atis");
+  if (!details) return;
+  const frame = details.querySelector(".atis-frame");
+  let loaded = false;
+  details.addEventListener("toggle", () => {
+    if (details.open && !loaded && frame && frame.dataset.src) {
+      frame.src = frame.dataset.src;
+      loaded = true;
+    }
+  });
+}
+
 function stamp() {
   document.getElementById("updated").textContent = "Updated " + new Date().toLocaleString();
 }
@@ -301,4 +350,5 @@ async function refreshAll() {
 document.getElementById("refresh").addEventListener("click", refreshAll);
 renderSources();
 refreshAll();
+setupATIS();
 setInterval(refreshAll, 10 * 60 * 1000); // auto-refresh every 10 min
