@@ -3,6 +3,7 @@
 //  - HKO live warning data is fetched from the official Open Data API (CORS:*).
 //  - Other sources are embedded inline when they allow framing, otherwise
 //    launched in a new tab (they set X-Frame-Options).
+//  - Order: Nowcast first, then Model / Satellite / Impact, Official last.
 //  Edit SOURCES below to add / remove / relabel perspectives.
 // ============================================================================
 
@@ -13,38 +14,7 @@ const HKO_TC = "https://data.weather.gov.hk/weatherAPI/opendata/weather.php?data
 const LAT = 20.3, LON = 114.2, ZOOM = 5;
 
 const SOURCES = [
-  {
-    id: "jma",
-    name: "JMA — Japan Meteorological Agency",
-    type: "Official",
-    perspective: "Official RSMC Tokyo Best Track & forecast for the NW Pacific — the region's designated warning centre.",
-    embed: "https://www.jma.go.jp/bosai/map.html#contents=typhoon&lang=en",
-    link: { label: "JMA Typhoon", url: "https://www.jma.go.jp/bosai/map.html#contents=typhoon&lang=en" },
-  },
-  {
-    id: "cma",
-    name: "CMA — China Meteorological Administration (nmc.cn)",
-    type: "Official",
-    perspective: "Official China TC centre track & intensity — a useful cross-check on JMA / HKO.",
-    embed: "https://typhoon.nmc.cn/",
-    link: { label: "CMA Typhoon", url: "https://typhoon.nmc.cn/" },
-  },
-  {
-    id: "jtwc",
-    name: "JTWC — Joint Typhoon Warning Center",
-    type: "Official",
-    perspective: "US Navy/Air Force warnings + Prognostic Reasoning — widely used internationally for intensity & track guidance.",
-    embed: null,
-    links: [{ label: "JTWC Home", url: "https://www.metoc.navy.mil/jtwc/jtwc.html" }],
-  },
-  {
-    id: "tt",
-    name: "Tropical Tidbits",
-    type: "Model",
-    perspective: "Numerical model output (GFS/ECMWF/ICON). The spread between models shows forecast uncertainty.",
-    embed: null,
-    links: [{ label: "Tropical Tidbits Models", url: "https://www.tropicaltidbits.com/analysis/models/" }],
-  },
+  // ---------------- NOWCAST (first) ----------------
   {
     id: "windy",
     name: "Windy",
@@ -69,6 +39,29 @@ const SOURCES = [
     link: { label: "VentuSky", url: `https://www.ventusky.com/?lat=${LAT}&lon=${LON}&z=${ZOOM}&layers=wind` },
   },
   {
+    id: "nullschool",
+    name: "Earth Nullschool",
+    type: "Nowcast",
+    perspective: "Global wind / atmosphere streams (WebGL). An elegant, different view of circulation around the basin.",
+    embed: `https://earth.nullschool.net/#current/wind/surface/overlay=rain/orthographic=${LON},${LAT},620`,
+    link: {
+      label: "Earth Nullschool",
+      url: `https://earth.nullschool.net/#current/wind/surface/overlay=rain/orthographic=${LON},${LAT},620`,
+    },
+  },
+
+  // ---------------- MODEL ----------------
+  {
+    id: "tt",
+    name: "Tropical Tidbits",
+    type: "Model",
+    perspective: "Numerical model output (GFS/ECMWF/ICON). The spread between models shows forecast uncertainty.",
+    embed: null,
+    links: [{ label: "Tropical Tidbits Models", url: "https://www.tropicaltidbits.com/analysis/models/" }],
+  },
+
+  // ---------------- SATELLITE ----------------
+  {
     id: "zoom",
     name: "Zoom Earth",
     type: "Satellite",
@@ -89,6 +82,8 @@ const SOURCES = [
       },
     ],
   },
+
+  // ---------------- IMPACT ----------------
   {
     id: "hkia",
     name: "HKIA — Flight Status",
@@ -99,6 +94,32 @@ const SOURCES = [
       { label: "Flight status", url: "https://www.hongkongairport.com/flightstatus/" },
       { label: "HKO airport weather", url: "https://www.hko.gov.hk/en/wxinfo/awfg.htm" },
     ],
+  },
+
+  // ---------------- OFFICIAL (non-HKO, last) ----------------
+  {
+    id: "cma",
+    name: "CMA — China Meteorological Administration (nmc.cn)",
+    type: "Official",
+    perspective: "Official China TC centre track & intensity — a useful cross-check on JMA / HKO.",
+    embed: "https://typhoon.nmc.cn/",
+    link: { label: "CMA Typhoon", url: "https://typhoon.nmc.cn/" },
+  },
+  {
+    id: "jma",
+    name: "JMA — Japan Meteorological Agency",
+    type: "Official",
+    perspective: "Official RSMC Tokyo Best Track & forecast for the NW Pacific — the region's designated warning centre. (Opens in new tab; JMA blocks inline embedding.)",
+    embed: null,
+    links: [{ label: "JMA Typhoon map", url: "https://www.jma.go.jp/bosai/map.html#contents=typhoon&lang=en" }],
+  },
+  {
+    id: "jtwc",
+    name: "JTWC — Joint Typhoon Warning Center",
+    type: "Official",
+    perspective: "US Navy/Air Force warnings + Prognostic Reasoning — widely used internationally for intensity & track guidance.",
+    embed: null,
+    links: [{ label: "JTWC Home", url: "https://www.metoc.navy.mil/jtwc/jtwc.html" }],
   },
 ];
 
@@ -168,7 +189,7 @@ async function loadHKO() {
             <h3>Tropical Cyclone</h3>
             <p>No tropical cyclone currently affecting Hong Kong.</p>
             <p style="font-size:12px;color:var(--muted)">HKO's live track JSON API is presently unavailable;
-              see the JMA / CMA panels and the HKO link above for track graphics.</p>
+              see the CMA panel and the HKO link above for track graphics.</p>
           </div>`);
       }
     }
